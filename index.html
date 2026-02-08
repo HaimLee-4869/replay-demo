@@ -1,0 +1,855 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RE:PLAY - Demo</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #4338CA;
+            --primary-light: #EEF2FF;
+            --primary-mid: #C7D2FE;
+            --accent: #10B981;
+            --accent-light: #D1FAE5;
+            --accent-dark: #065F46;
+            --warning: #F59E0B;
+            --warning-light: #FEF3C7;
+            --warning-dark: #92400E;
+            --text-main: #1E1B4B;
+            --text-sub: #6B7280;
+            --bg: #F5F3FF;
+            --white: #FFFFFF;
+            --border: #E5E7EB;
+            --gray-50: #F9FAFB;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Noto Sans KR', -apple-system, sans-serif;
+            background: linear-gradient(135deg, #1E1B4B 0%, #312E81 50%, #3730A3 100%);
+            display: flex; justify-content: center; align-items: center;
+            min-height: 100vh; padding: 20px;
+        }
+
+        /* 스마트폰 프레임 */
+        .phone-frame {
+            width: 375px; height: 812px;
+            background-color: var(--bg);
+            border-radius: 44px;
+            box-shadow: 0 0 0 3px #1E1B4B, 0 0 0 6px #555, 0 50px 100px -20px rgba(0,0,0,0.5);
+            position: relative; overflow: hidden;
+            display: flex; flex-direction: column;
+        }
+
+        /* 상단 노치 */
+        .phone-frame::before {
+            content: '';
+            position: absolute; top: 0; left: 50%; transform: translateX(-50%);
+            width: 150px; height: 28px;
+            background: #111; border-radius: 0 0 20px 20px; z-index: 100;
+        }
+
+        /* 헤더 */
+        .header {
+            background: var(--white);
+            padding: 44px 20px 14px;
+            display: flex; justify-content: space-between; align-items: center;
+            border-bottom: 1px solid var(--border);
+            position: relative; z-index: 10;
+        }
+        .logo { font-weight: 900; font-size: 1.25rem; color: var(--primary); letter-spacing: -1px; }
+        .header-icons { display: flex; gap: 12px; font-size: 1.1rem; }
+
+        /* 콘텐츠 */
+        .content {
+            flex: 1; overflow-y: auto; padding: 20px;
+            -ms-overflow-style: none; scrollbar-width: none;
+        }
+        .content::-webkit-scrollbar { display: none; }
+
+        /* 화면 전환 */
+        .screen { display: none; animation: fadeIn 0.25s ease; }
+        .screen.active { display: block; }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ==================== 홈 화면 ==================== */
+        .greeting { font-size: 1.3rem; font-weight: 800; color: var(--text-main); margin-bottom: 4px; line-height: 1.4; }
+        .greeting-sub { font-size: 0.85rem; color: var(--text-sub); margin-bottom: 20px; }
+
+        .card {
+            background: var(--white); border-radius: 16px;
+            padding: 18px; margin-bottom: 14px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+        }
+        .card-label { font-size: 0.78rem; font-weight: 600; color: var(--text-sub); margin-bottom: 8px; }
+
+        .level-row { display: flex; justify-content: space-between; align-items: flex-end; }
+        .level-num { font-size: 2rem; font-weight: 900; color: var(--primary); line-height: 1; }
+        .level-sub { font-size: 0.8rem; color: var(--text-sub); }
+
+        .progress-bar { width: 100%; height: 6px; background: #E5E7EB; border-radius: 3px; margin-top: 10px; overflow: hidden; }
+        .progress-fill { height: 100%; background: linear-gradient(90deg, var(--primary), #818CF8); border-radius: 3px; transition: width 0.6s ease; }
+
+        .shortcut-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 6px; }
+        .shortcut-card {
+            background: var(--white); border-radius: 14px; padding: 18px 14px;
+            text-align: center; cursor: pointer; box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+            transition: transform 0.15s, box-shadow 0.15s;
+            border: 1.5px solid transparent;
+        }
+        .shortcut-card:active { transform: scale(0.97); }
+        .shortcut-card:hover { border-color: var(--primary-mid); box-shadow: 0 4px 12px rgba(67,56,202,0.1); }
+        .shortcut-icon { font-size: 1.8rem; margin-bottom: 8px; }
+        .shortcut-label { font-size: 0.85rem; font-weight: 700; color: var(--text-main); }
+        .shortcut-desc { font-size: 0.72rem; color: var(--text-sub); margin-top: 2px; }
+
+        .section-title { font-weight: 800; font-size: 0.95rem; color: var(--text-main); margin: 20px 0 10px; }
+
+        /* ==================== 온보딩 (조건 입력) ==================== */
+        .onboard-title { font-size: 1.15rem; font-weight: 800; color: var(--text-main); margin-bottom: 4px; }
+        .onboard-sub { font-size: 0.82rem; color: var(--text-sub); margin-bottom: 20px; line-height: 1.5; }
+
+        .question-block { margin-bottom: 20px; }
+        .q-label { font-size: 0.88rem; font-weight: 700; color: var(--text-main); margin-bottom: 10px; }
+
+        .option-group { display: flex; flex-wrap: wrap; gap: 8px; }
+        .option-btn {
+            padding: 8px 16px; border-radius: 20px; border: 1.5px solid var(--border);
+            background: var(--white); font-size: 0.82rem; font-weight: 500;
+            color: var(--text-main); cursor: pointer; transition: all 0.15s;
+            font-family: inherit;
+        }
+        .option-btn:hover { border-color: var(--primary-mid); }
+        .option-btn.selected {
+            background: var(--primary); color: white; border-color: var(--primary);
+        }
+
+        .slider-row { display: flex; align-items: center; gap: 12px; }
+        .slider-row input[type=range] { flex: 1; accent-color: var(--primary); }
+        .slider-val { font-size: 0.85rem; font-weight: 700; color: var(--primary); min-width: 40px; text-align: center; }
+
+        .btn-primary {
+            width: 100%; padding: 14px; border: none; border-radius: 12px;
+            background: var(--primary); color: white; font-size: 0.95rem;
+            font-weight: 700; cursor: pointer; margin-top: 10px;
+            font-family: inherit; transition: opacity 0.15s;
+        }
+        .btn-primary:active { opacity: 0.85; }
+        .btn-secondary {
+            width: 100%; padding: 14px; border: 1.5px solid var(--border); border-radius: 12px;
+            background: var(--white); color: var(--text-main); font-size: 0.95rem;
+            font-weight: 600; cursor: pointer; margin-top: 8px; font-family: inherit;
+        }
+
+        /* ==================== RE:PLAY 연습 - 파트너 선택 ==================== */
+        .partner-card {
+            background: var(--white); border-radius: 16px; padding: 18px;
+            margin-bottom: 12px; cursor: pointer; border: 2px solid transparent;
+            transition: all 0.15s; display: flex; gap: 14px; align-items: center;
+        }
+        .partner-card:hover { border-color: var(--primary-mid); }
+        .partner-card.selected { border-color: var(--primary); background: var(--primary-light); }
+        .partner-avatar {
+            width: 52px; height: 52px; border-radius: 14px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.6rem; flex-shrink: 0;
+        }
+        .partner-info { flex: 1; }
+        .partner-name { font-size: 0.95rem; font-weight: 700; color: var(--text-main); }
+        .partner-desc { font-size: 0.78rem; color: var(--text-sub); margin-top: 2px; line-height: 1.4; }
+        .partner-tags { display: flex; gap: 6px; margin-top: 6px; }
+        .partner-tag { font-size: 0.7rem; padding: 2px 8px; border-radius: 10px; background: var(--gray-50); color: var(--text-sub); font-weight: 500; }
+
+        /* ==================== RE:PLAY - 화상 연습 화면 ==================== */
+        .video-container {
+            position: relative; width: 100%; aspect-ratio: 4/3;
+            background: #1a1a2e; border-radius: 16px; overflow: hidden; margin-bottom: 16px;
+        }
+        .video-main {
+            width: 100%; height: 100%;
+            display: flex; align-items: center; justify-content: center;
+            flex-direction: column; gap: 8px;
+        }
+        .video-avatar {
+            width: 80px; height: 80px; border-radius: 50%;
+            background: linear-gradient(135deg, #818CF8, #4338CA);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 2.2rem; animation: pulse-ring 2s infinite;
+        }
+        @keyframes pulse-ring {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(129,140,248,0.4); }
+            50% { box-shadow: 0 0 0 12px rgba(129,140,248,0); }
+        }
+        .video-label { color: rgba(255,255,255,0.8); font-size: 0.82rem; font-weight: 500; }
+        .video-status { color: var(--accent); font-size: 0.75rem; font-weight: 600; display: flex; align-items: center; gap: 4px; }
+        .video-status::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: var(--accent); animation: blink 1.5s infinite; }
+        @keyframes blink { 0%,100%{ opacity:1; } 50%{ opacity:0.3; } }
+
+        /* 내 카메라 (PIP) → 상대방 PIP */
+        .partner-pip {
+            position: absolute; top: 10px; right: 10px;
+            width: 70px; height: 70px; 
+            background: linear-gradient(135deg, #818CF8, #4338CA);
+            border-radius: 50%; border: 3px solid rgba(255,255,255,0.3);
+            display: flex; align-items: center; justify-content: center;
+            flex-direction: column; gap: 2px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            animation: pulse-ring 2s infinite;
+        }
+
+        /* 화상 하단 컨트롤 */
+        .video-controls {
+            display: flex; justify-content: center; gap: 16px; margin-bottom: 16px;
+        }
+        .ctrl-btn {
+            width: 44px; height: 44px; border-radius: 50%; border: none;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.1rem; cursor: pointer; transition: transform 0.15s;
+        }
+        .ctrl-btn:active { transform: scale(0.9); }
+        .ctrl-btn.on { background: var(--white); color: var(--text-main); }
+        .ctrl-btn.off { background: #EF4444; color: white; }
+        .ctrl-btn.end { background: #EF4444; color: white; width: 56px; border-radius: 28px; font-size: 0.8rem; font-weight: 700; }
+
+        /* 실시간 피드백 패널 */
+        .live-feedback {
+            background: var(--white); border-radius: 14px; padding: 14px;
+            border-left: 3px solid var(--warning);
+        }
+        .live-feedback-title { font-size: 0.78rem; font-weight: 700; color: var(--warning-dark); margin-bottom: 6px; display: flex; align-items: center; gap: 4px; }
+        .feedback-item {
+            font-size: 0.82rem; color: var(--text-main); line-height: 1.5;
+            padding: 6px 0; border-bottom: 1px solid var(--border);
+        }
+        .feedback-item:last-child { border-bottom: none; }
+        .fb-good { color: var(--accent-dark); }
+        .fb-tip { color: var(--primary); }
+
+        .impression-box {
+            background: var(--primary-light); border-radius: 12px; padding: 14px; margin-top: 12px;
+        }
+        .impression-title { font-size: 0.78rem; font-weight: 700; color: var(--primary); margin-bottom: 6px; }
+        .impression-text { font-size: 0.82rem; color: var(--text-main); line-height: 1.5; }
+
+        /* ==================== 태스크 매칭 ==================== */
+        .condition-tags { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 16px; }
+        .tag {
+            padding: 5px 12px; background: var(--primary-light); color: var(--primary);
+            border-radius: 20px; font-size: 0.75rem; font-weight: 600;
+        }
+
+        .job-card {
+            background: var(--white); border-radius: 14px; padding: 16px;
+            margin-bottom: 12px; border: 1.5px solid var(--border);
+            transition: transform 0.15s;
+        }
+        .job-card:active { transform: scale(0.98); }
+        .match-badge {
+            display: inline-block; padding: 3px 10px; border-radius: 8px;
+            font-size: 0.72rem; font-weight: 800; margin-bottom: 8px;
+        }
+        .match-high { background: var(--accent-light); color: var(--accent-dark); }
+        .match-mid { background: #DBEAFE; color: #1E40AF; }
+
+        .job-name { font-size: 0.95rem; font-weight: 700; color: var(--text-main); margin-bottom: 3px; }
+        .job-company { font-size: 0.78rem; color: var(--text-sub); margin-bottom: 10px; }
+
+        .task-decompose {
+            background: var(--gray-50); border-radius: 10px; padding: 12px; font-size: 0.8rem; line-height: 1.6;
+        }
+        .task-decompose-title { font-size: 0.72rem; font-weight: 700; color: var(--text-sub); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px; }
+        .task-item { display: flex; align-items: flex-start; gap: 6px; margin-bottom: 4px; }
+        .task-check { color: var(--accent); flex-shrink: 0; font-size: 0.85rem; }
+        .task-warn { color: var(--warning); flex-shrink: 0; font-size: 0.85rem; }
+
+        .original-job {
+            font-size: 0.75rem; color: var(--text-sub); margin-top: 10px; padding-top: 10px;
+            border-top: 1px dashed var(--border); display: flex; align-items: center; gap: 4px;
+        }
+
+        /* ==================== 하단 네비게이션 ==================== */
+        .nav-bar {
+            background: var(--white); padding: 10px 20px 28px;
+            display: flex; justify-content: space-around;
+            border-top: 1px solid var(--border);
+        }
+        .nav-item {
+            display: flex; flex-direction: column; align-items: center; gap: 3px;
+            color: #9CA3AF; font-size: 0.68rem; cursor: pointer;
+            transition: color 0.15s; padding: 4px 8px;
+            font-weight: 500;
+        }
+        .nav-item.active { color: var(--primary); font-weight: 700; }
+        .nav-icon { font-size: 1.35rem; }
+
+        /* 유틸 */
+        .mt-12 { margin-top: 12px; }
+        .text-center { text-align: center; }
+    </style>
+</head>
+<body>
+
+<div class="phone-frame">
+    <div class="header">
+        <div class="logo">RE:PLAY</div>
+        <div class="header-icons">
+            <span style="cursor:pointer">🔔</span>
+        </div>
+    </div>
+
+    <div class="content">
+
+        <!-- ========== 홈 ========== -->
+        <div id="screen-home" class="screen active">
+            <div class="greeting">안녕하세요, 영솔님!</div>
+            <div class="greeting-sub">오늘도 한 걸음 더 가까워졌어요 💪</div>
+
+            <div class="card">
+                <div class="card-label">나의 사회 적응 레벨</div>
+                <div class="level-row">
+                    <div class="level-num">Lv.3</div>
+                    <div class="level-sub">다음 레벨까지 25%</div>
+                </div>
+                <div class="progress-bar"><div class="progress-fill" style="width:75%"></div></div>
+            </div>
+
+            <div class="section-title">바로가기</div>
+            <div class="shortcut-grid">
+                <div class="shortcut-card" onclick="changeTab('partner-select')">
+                    <div class="shortcut-icon">🎥</div>
+                    <div class="shortcut-label">화상 연습</div>
+                    <div class="shortcut-desc">면접·스몰토크 연습</div>
+                </div>
+                <div class="shortcut-card" onclick="changeTab('jobs')">
+                    <div class="shortcut-icon">🧩</div>
+                    <div class="shortcut-label">태스크 매칭</div>
+                    <div class="shortcut-desc">나에게 맞는 업무</div>
+                </div>
+            </div>
+
+            <div class="section-title">최근 연습 기록</div>
+            <div class="card" style="display:flex; gap:12px; align-items:center;">
+                <div style="font-size:1.5rem;">💬</div>
+                <div style="flex:1;">
+                    <div style="font-size:0.85rem; font-weight:600;">모의 면접 – 자기소개</div>
+                    <div style="font-size:0.75rem; color:var(--text-sub);">어제 · AI 면접관</div>
+                </div>
+                <div style="font-size:0.8rem; font-weight:700; color:var(--accent);">B+</div>
+            </div>
+        </div>
+
+        <!-- ========== 수행 조건 입력 (온보딩) ========== -->
+        <div id="screen-onboard" class="screen">
+            <div class="onboard-title">나의 수행 조건 설정</div>
+            <div class="onboard-sub">장애 등급이 아닌, <b>실제로 할 수 있는 것</b>을 기준으로 매칭해드려요.</div>
+
+            <div class="question-block">
+                <div class="q-label">🦵 오래 서 있기</div>
+                <div class="slider-row">
+                    <span style="font-size:0.75rem; color:var(--text-sub);">어려움</span>
+                    <input type="range" id="cond-standing" min="0" max="4" value="1" oninput="this.nextElementSibling.textContent=['불가','15분','30분','1시간','2시간+'][this.value]">
+                    <span class="slider-val">15분</span>
+                    <span style="font-size:0.75rem; color:var(--text-sub);">편함</span>
+                </div>
+            </div>
+
+            <div class="question-block">
+                <div class="q-label">🔊 소음 민감도</div>
+                <div class="option-group" id="cond-noise">
+                    <button class="option-btn" onclick="toggleOption(this)" data-val="매우 민감">매우 민감</button>
+                    <button class="option-btn selected" onclick="toggleOption(this)" data-val="약간 민감">약간 민감</button>
+                    <button class="option-btn" onclick="toggleOption(this)" data-val="괜찮음">괜찮음</button>
+                </div>
+            </div>
+
+            <div class="question-block">
+                <div class="q-label">🤝 선호 작업 방식</div>
+                <div class="option-group" id="cond-work">
+                    <button class="option-btn selected" onclick="toggleOption(this)" data-val="혼자 작업">혼자 작업</button>
+                    <button class="option-btn" onclick="toggleOption(this)" data-val="소규모 팀">소규모 팀</button>
+                    <button class="option-btn" onclick="toggleOption(this)" data-val="상관없음">상관없음</button>
+                </div>
+            </div>
+
+            <div class="question-block">
+                <div class="q-label">🔁 반복 업무에 대한 선호</div>
+                <div class="option-group" id="cond-repeat">
+                    <button class="option-btn selected" onclick="toggleOption(this)" data-val="선호">선호</button>
+                    <button class="option-btn" onclick="toggleOption(this)" data-val="보통">보통</button>
+                    <button class="option-btn" onclick="toggleOption(this)" data-val="비선호">비선호</button>
+                </div>
+            </div>
+
+            <div class="question-block">
+                <div class="q-label">✋ 손 사용</div>
+                <div class="option-group" id="cond-hand">
+                    <button class="option-btn selected" onclick="toggleOption(this)" data-val="양손 가능">양손 가능</button>
+                    <button class="option-btn" onclick="toggleOption(this)" data-val="한 손 가능">한 손 가능</button>
+                    <button class="option-btn" onclick="toggleOption(this)" data-val="키보드만 가능">키보드만 가능</button>
+                </div>
+            </div>
+
+            <button class="btn-primary" onclick="saveConditionsAndMatch()">조건 저장하고 매칭 보기</button>
+            <button class="btn-secondary" onclick="changeTab('home')">나중에 할게요</button>
+        </div>
+
+        <!-- ========== RE:PLAY 연습 파트너 선택 ========== -->
+        <div id="screen-partner-select" class="screen">
+            <div class="onboard-title">연습 파트너 선택</div>
+            <div class="onboard-sub">오늘은 어떤 파트너와 연습할까요?</div>
+
+            <div class="partner-card selected" onclick="selectPartner(this, 'ai')" id="partner-ai">
+                <div class="partner-avatar" style="background: linear-gradient(135deg, #818CF8, #4338CA);">🤖</div>
+                <div class="partner-info">
+                    <div class="partner-name">AI 면접관</div>
+                    <div class="partner-desc">24시간 반복 연습 가능. 즉각적인 피드백을 받아요.</div>
+                    <div class="partner-tags">
+                        <span class="partner-tag">언제든 가능</span>
+                        <span class="partner-tag">반복 연습</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="partner-card" onclick="selectPartner(this, 'mentor')" id="partner-mentor">
+                <div class="partner-avatar" style="background: linear-gradient(135deg, #34D399, #059669);">🧑‍🎓</div>
+                <div class="partner-info">
+                    <div class="partner-name">대학생 멘토</div>
+                    <div class="partner-desc">정서적 교류와 심층 피드백. 실제 사람과 소통해요.</div>
+                    <div class="partner-tags">
+                        <span class="partner-tag">예약 필요</span>
+                        <span class="partner-tag">심화 피드백</span>
+                    </div>
+                </div>
+            </div>
+
+            <div style="margin-top: 16px;">
+                <div class="q-label">연습 시나리오</div>
+                <div class="option-group" id="scenario-group">
+                    <button class="option-btn selected" onclick="selectScenario(this, 'intro')">자기소개</button>
+                    <button class="option-btn" onclick="selectScenario(this, 'interview')">면접 질문</button>
+                    <button class="option-btn" onclick="selectScenario(this, 'smalltalk')">직장 스몰토크</button>
+                    <button class="option-btn" onclick="selectScenario(this, 'phone')">전화 응대</button>
+                </div>
+            </div>
+
+            <button class="btn-primary mt-12" onclick="startPractice()">연습 시작하기 🎥</button>
+        </div>
+
+        <!-- ========== RE:PLAY - 화상 연습 ========== -->
+        <div id="screen-practice" class="screen">
+            <!-- 화상 영역: 내 웹캠이 메인, 상대 아바타가 PIP -->
+            <div class="video-container" id="video-container">
+                <!-- 내 웹캠 (메인) -->
+                <video id="webcam-video" autoplay playsinline muted style="width:100%; height:100%; object-fit:cover;"></video>
+                <!-- 웹캠 못 쓸 때 폴백 -->
+                <div id="webcam-fallback" style="display:none; width:100%; height:100%; background:#1a1a2e; display:none; flex-direction:column; align-items:center; justify-content:center; gap:6px;">
+                    <div style="font-size:3rem;">🙂</div>
+                    <div style="color:rgba(255,255,255,0.6); font-size:0.78rem;">카메라를 사용할 수 없어요</div>
+                </div>
+                <!-- 녹화 표시 -->
+                <div id="rec-indicator" style="position:absolute; top:12px; left:12px; display:flex; align-items:center; gap:6px; background:rgba(0,0,0,0.5); padding:4px 10px; border-radius:20px;">
+                    <div style="width:8px; height:8px; border-radius:50%; background:#EF4444; animation: blink 1s infinite;"></div>
+                    <span style="color:white; font-size:0.72rem; font-weight:600;" id="rec-timer">00:00</span>
+                </div>
+                <!-- 상대방 PIP -->
+                <div class="partner-pip" id="partner-pip">
+                    <div id="pip-avatar" style="font-size:1.6rem;">🤖</div>
+                    <div id="pip-name" style="font-size:0.58rem; color:rgba(255,255,255,0.7); text-align:center; line-height:1.2;">AI<br>면접관</div>
+                </div>
+            </div>
+
+            <!-- 현재 시나리오 표시 -->
+            <div id="prac-scenario-badge" style="display:inline-block; background:var(--primary-light); color:var(--primary); font-size:0.75rem; font-weight:700; padding:4px 12px; border-radius:20px; margin-bottom:12px;">📋 자기소개 연습</div>
+
+            <!-- 현재 질문/상황 -->
+            <div class="card" id="prac-situation" style="border-left: 3px solid var(--primary); margin-bottom: 14px;">
+                <div style="font-size:0.75rem; font-weight:700; color:var(--primary); margin-bottom:4px;" id="prac-speaker">AI 면접관이 말하고 있어요</div>
+                <div style="font-size:0.9rem; color:var(--text-main); line-height:1.5;" id="prac-question">
+                    "안녕하세요, 영솔님. 간단하게 자기소개 부탁드려요."
+                </div>
+            </div>
+
+            <div class="video-controls">
+                <button class="ctrl-btn on" id="btn-mic" onclick="toggleMic()" title="마이크">🎤</button>
+                <button class="ctrl-btn on" id="btn-cam" onclick="toggleCam()" title="카메라">🎥</button>
+                <button class="ctrl-btn end" onclick="endPractice()" title="종료">종료</button>
+            </div>
+
+            <!-- 실시간 AI 피드백 (연습 중 순차적으로 나타남) -->
+            <div class="live-feedback" id="prac-feedback">
+                <div class="live-feedback-title">💡 실시간 피드백</div>
+                <div id="prac-feedback-items"></div>
+            </div>
+
+            <!-- 상대방 인상 분석 (연습 중 나중에 나타남) -->
+            <div class="impression-box" id="prac-impression" style="display:none;">
+                <div class="impression-title">🪞 내 발화가 상대에게 주는 인상</div>
+                <div class="impression-text" id="prac-impression-text"></div>
+            </div>
+        </div>
+
+        <!-- ========== 연습 결과 ========== -->
+        <div id="screen-practice-result" class="screen">
+            <div class="text-center" style="margin-bottom: 20px;">
+                <div style="font-size: 3rem; margin-bottom: 8px;">🎉</div>
+                <div class="onboard-title">연습 완료!</div>
+                <div class="onboard-sub" id="result-duration">3분 24초 동안 연습했어요</div>
+            </div>
+
+            <div id="result-scenario-badge" style="text-align:center; margin-bottom: 14px;">
+                <span style="display:inline-block; background:var(--primary-light); color:var(--primary); font-size:0.78rem; font-weight:700; padding:5px 14px; border-radius:20px;"></span>
+            </div>
+
+            <div class="card">
+                <div class="card-label" id="result-summary-label">종합 피드백</div>
+                <div style="display:flex; justify-content:space-around; text-align:center; margin: 12px 0;" id="result-stats">
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-label">상대방에게 전달된 인상</div>
+                <div style="font-size:0.85rem; color:var(--text-main); line-height:1.6;" id="result-impression">
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-label">다음에 연습하면 좋을 시나리오</div>
+                <div style="font-size:0.85rem; color:var(--text-sub); line-height:1.5;" id="result-next">
+                </div>
+            </div>
+
+            <button class="btn-primary" onclick="changeTab('partner-select')">다시 연습하기</button>
+            <button class="btn-secondary" onclick="changeTab('home')">홈으로 돌아가기</button>
+        </div>
+
+        <!-- ========== 태스크 매칭 ========== -->
+        <div id="screen-jobs" class="screen">
+            <div style="margin-bottom: 4px;">
+                <div class="onboard-title">맞춤 태스크 추천</div>
+                <div class="onboard-sub">영솔님의 수행 조건에 맞는 업무를 찾았어요.</div>
+            </div>
+            <div class="condition-tags" id="jobs-tags"></div>
+            <div id="jobs-list"></div>
+            <div style="text-align:center; margin-top:8px;">
+                <button class="btn-secondary" onclick="changeTab('onboard')" style="width:auto; display:inline-block; padding:10px 20px; font-size:0.82rem;">
+                    ⚙️ 수행 조건 수정하기
+                </button>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- 하단 네비게이션 -->
+    <div class="nav-bar">
+        <div class="nav-item active" onclick="changeTab('home', this)">
+            <div class="nav-icon">🏠</div><span>홈</span>
+        </div>
+        <div class="nav-item" onclick="changeTab('partner-select', this)">
+            <div class="nav-icon">🎥</div><span>RE:PLAY</span>
+        </div>
+        <div class="nav-item" onclick="changeTab('jobs', this)">
+            <div class="nav-icon">🧩</div><span>태스크</span>
+        </div>
+        <div class="nav-item" onclick="changeTab('onboard', this)">
+            <div class="nav-icon">⚙️</div><span>내 조건</span>
+        </div>
+    </div>
+</div>
+
+<script>
+    let selectedPartner = 'ai', selectedScenario = 'intro';
+    let webcamStream = null, timerInterval = null, feedbackTimeouts = [], elapsedSeconds = 0, camOn = true, micOn = true;
+
+    const C = {
+        ai: { avatar:'🤖', name:'AI 면접관', pipName:'AI<br>면접관', avatarBg:'linear-gradient(135deg,#818CF8,#4338CA)',
+            intro: { badge:'📋 자기소개 연습', speaker:'AI 면접관이 말하고 있어요', question:'"안녕하세요, 영솔님. 간단하게 자기소개 부탁드려요."',
+                feedback:[ {type:'good',label:'시선 처리',text:'카메라를 잘 바라보고 있어요',delay:3}, {type:'tip',label:'표현 제안',text:'"컴퓨터를 잘합니다" → "<b>데이터 입력 업무에 자신 있습니다</b>"로 바꿔볼까요?',delay:8}, {type:'good',label:'말 속도',text:'적절한 속도예요, 잘하고 있어요!',delay:14} ],
+                impression:'현재 <b>조금 긴장된</b> 인상이에요. <b>미소를 한 번 더</b> 지어보면 훨씬 편안해 보여요.', impressionDelay:18,
+                result:{ grade:'B+',gc:'var(--accent)',s1:{v:'3회',l:'표현 개선 제안'},s2:{v:'1개',l:'보완 포인트'}, imp:'<b>성실하고 차분한</b> 인상이었어요. 답변이 짧아 <b>자신감이 부족해</b> 보일 수 있어요. 구체적인 경험을 한 문장 더 넣어보세요.', next:'💡 "<b>경험 기반 답변 말하기</b>" — 자기소개에 구체적 경험 붙이기' }
+            },
+            interview: { badge:'🎯 면접 질문 연습', speaker:'AI 면접관이 질문하고 있어요', question:'"지원하신 직무에서 본인의 강점이 무엇이라고 생각하시나요?"',
+                feedback:[ {type:'tip',label:'구체성',text:'"열심히 하겠습니다"보다 <b>구체적 경험 사례</b>를 들어보세요',delay:4}, {type:'good',label:'자세',text:'상체를 바르게 유지하고 있어요',delay:10}, {type:'tip',label:'답변 길이',text:'30초~1분 사이가 적절해요. 조금 더 길게 답변해볼까요?',delay:16} ],
+                impression:'<b>답변이 너무 짧아</b> 준비 부족으로 보일 수 있어요. <b>"저는 ~한 경험이 있습니다"</b>로 시작해보세요.', impressionDelay:20,
+                result:{ grade:'B',gc:'var(--warning)',s1:{v:'5회',l:'표현 개선 제안'},s2:{v:'2개',l:'보완 포인트'}, imp:'<b>진솔하고 겸손한</b> 인상이었어요. 강점에 <b>근거</b>를 더해보세요.', next:'💡 "<b>STAR 기법으로 답변하기</b>" — 상황-과제-행동-결과 구조' }
+            },
+            smalltalk: { badge:'☕ 직장 스몰토크 연습', speaker:'AI 동료가 말을 걸었어요', question:'"영솔님, 점심 뭐 드실 거예요? 같이 갈래요?"',
+                feedback:[ {type:'good',label:'반응 속도',text:'자연스럽게 대답하고 있어요',delay:3}, {type:'tip',label:'대화 이어가기',text:'<b>"OO님은요?"</b>처럼 질문을 되돌려보세요',delay:9}, {type:'tip',label:'표정',text:'살짝 미소를 지으면 더 친근하게 느껴져요',delay:15} ],
+                impression:'<b>다소 수동적인</b> 인상이에요. <b>맞장구나 질문</b>을 넣으면 확 달라져요.', impressionDelay:19,
+                result:{ grade:'B+',gc:'var(--accent)',s1:{v:'2회',l:'대화 패턴 제안'},s2:{v:'1개',l:'보완 포인트'}, imp:'<b>조용하지만 호감 가는</b> 인상. 질문을 던지면 더 빨리 친해질 수 있어요.', next:'💡 "<b>대화 주고받기 연습</b>" — 답 + 되묻기 패턴' }
+            },
+            phone: { badge:'📞 전화 응대 연습', speaker:'AI 고객이 전화를 걸었어요', question:'"여보세요, 거기 OO팀이죠? 지난번 요청한 서류 확인 좀 하려고요."',
+                feedback:[ {type:'tip',label:'첫인사',text:'<b>"OO팀 영솔입니다, 무엇을 도와드릴까요?"</b>로 시작해보세요',delay:4}, {type:'good',label:'목소리 톤',text:'차분하고 또렷하게 말하고 있어요',delay:10}, {type:'tip',label:'메모 습관',text:'상대 이름과 요청을 <b>바로 메모</b>하는 연습을 해보세요',delay:16} ],
+                impression:'<b>약간 당황한</b> 인상이에요. 전화는 <b>목소리 톤과 명확한 문장</b>이 더 중요해요.', impressionDelay:20,
+                result:{ grade:'C+',gc:'var(--warning)',s1:{v:'4회',l:'표현 개선 제안'},s2:{v:'3개',l:'보완 포인트'}, imp:'<b>긴장했지만 예의 바른</b> 인상. 첫마디 패턴을 외워두면 자신감이 올라가요.', next:'💡 "<b>전화 응대 기본 패턴</b>" — 인사→확인→응답→마무리' }
+            }
+        },
+        mentor: { avatar:'🧑‍🎓', name:'멘토 지수', pipName:'멘토<br>지수', avatarBg:'linear-gradient(135deg,#34D399,#059669)',
+            intro: { badge:'📋 자기소개 연습', speaker:'멘토 지수님이 말하고 있어요', question:'"영솔님, 편하게 해요~ 처음 만난 사람에게 자기소개한다고 생각하고 말해볼래요?"',
+                feedback:[ {type:'good',label:'분위기',text:'긴장을 풀고 자연스럽게 이야기하고 있어요',delay:4}, {type:'tip',label:'멘토 코멘트',text:'"취미나 좋아하는 것도 넣어보면 기억에 남는 자기소개가 돼요"',delay:10}, {type:'good',label:'눈맞춤',text:'화면을 잘 바라보고 있어요, 자연스러워요',delay:16} ],
+                impression:'지수 멘토: <b>솔직하고 꾸밈없는</b> 느낌이라 호감이 가요. 좋아하는 것 하나만 더 넣으면 <b>기억에 남을</b> 거예요.', impressionDelay:20,
+                result:{ grade:'A-',gc:'var(--accent)',s1:{v:'2회',l:'멘토 코멘트'},s2:{v:'0개',l:'보완 포인트'}, imp:'멘토 지수: "영솔님 말 잘하시네요! <b>편안하고 진솔한</b> 느낌이 좋았어요. 취미 이야기도 넣어봐요!"', next:'💡 "<b>취미·관심사 붙여 소개하기</b>" — 나만의 이야기로 기억에 남는 자기소개' }
+            },
+            interview: { badge:'🎯 면접 질문 연습', speaker:'멘토 지수님이 면접관 역할을 하고 있어요', question:'"자, 제가 면접관이에요~ 영솔님이 이 일에 지원한 이유가 뭐예요?"',
+                feedback:[ {type:'good',label:'진정성',text:'본인의 이야기를 솔직하게 전달하고 있어요',delay:5}, {type:'tip',label:'멘토 코멘트',text:'"\'그래서 이 회사에서 ~하고 싶다\'로 연결하면 완벽해요"',delay:11}, {type:'tip',label:'구조 제안',text:'멘토가 STAR 기법을 함께 연습해줄게요',delay:17} ],
+                impression:'지수 멘토: <b>진심이 느껴져서</b> 좋았어요. <b>회사와 연결 짓는 마무리</b>가 있으면 더 설득력 있어요.', impressionDelay:21,
+                result:{ grade:'B+',gc:'var(--accent)',s1:{v:'3회',l:'멘토 코멘트'},s2:{v:'1개',l:'보완 포인트'}, imp:'멘토 지수: "솔직한 답변이 인상적! <b>지원 동기 연결</b> 연습만 더 하면 거의 다 됐어요!"', next:'💡 "<b>지원 동기 연결짓기</b>" — 경험을 회사·직무와 이어 말하기' }
+            },
+            smalltalk: { badge:'☕ 직장 스몰토크 연습', speaker:'멘토 지수님이 동료 역할을 하고 있어요', question:'"영솔님~ 저 새로 온 지수예요. 요즘 뭐 재밌는 거 있어요?"',
+                feedback:[ {type:'good',label:'자연스러움',text:'대화 흐름이 자연스러워요!',delay:4}, {type:'tip',label:'멘토 코멘트',text:'"한 단어로 끝내지 말고, 이유를 붙여보면 대화가 길어져요"',delay:10}, {type:'good',label:'리액션',text:'고개 끄덕임이 좋아요, 상대가 편안해해요',delay:16} ],
+                impression:'지수 멘토: <b>리액션이 좋아서</b> 대화하고 싶은 느낌! <b>한 문장만 더</b> 붙이면 금방 친해져요.', impressionDelay:20,
+                result:{ grade:'A-',gc:'var(--accent)',s1:{v:'2회',l:'멘토 코멘트'},s2:{v:'0개',l:'보완 포인트'}, imp:'멘토 지수: "리액션 진짜 좋아요! <b>편안한 대화 상대</b>라는 느낌이에요 💪"', next:'💡 "<b>관심사 공유하기</b>" — 좋아하는 것 2~3문장으로 이야기하기' }
+            },
+            phone: { badge:'📞 전화 응대 연습', speaker:'멘토 지수님이 전화 건 고객 역할을 하고 있어요', question:'"여보세요~ 제가 고객 역할 할게요. 준비됐어요? …여보세요, 서비스팀이죠?"',
+                feedback:[ {type:'tip',label:'멘토 코멘트',text:'"첫마디가 중요해요! \'서비스팀 영솔입니다\'로 시작해봐요"',delay:4}, {type:'good',label:'목소리',text:'또렷하게 말하고 있어요, 전화로 듣기 편한 톤이에요',delay:10}, {type:'tip',label:'연습 포인트',text:'다양한 상황(문의, 불만, 요청)을 번갈아 연습해볼게요',delay:16} ],
+                impression:'지수 멘토: 처음이라 당황하는 건 당연! <b>기본 인사 패턴만 외우면</b> 나머지는 자연스럽게 따라와요.', impressionDelay:20,
+                result:{ grade:'B-',gc:'var(--warning)',s1:{v:'4회',l:'멘토 코멘트'},s2:{v:'2개',l:'보완 포인트'}, imp:'멘토 지수: "처음 치고 잘했어요! <b>2~3번만 더 반복</b>하면 자신감 확 붙어요!"', next:'💡 "<b>전화 응대 롤플레이 심화</b>" — 불만 고객, 전달 요청 등' }
+            }
+        }
+    };
+
+    // ========== 웹캠 ==========
+    async function startWebcam() {
+        const video = document.getElementById('webcam-video'), fallback = document.getElementById('webcam-fallback');
+        try {
+            webcamStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode:'user', width:{ideal:640}, height:{ideal:480} }, audio: true });
+            video.srcObject = webcamStream; video.style.display = 'block'; fallback.style.display = 'none';
+            camOn = true; micOn = true;
+        } catch(e) {
+            video.style.display = 'none'; fallback.style.display = 'flex'; camOn = false; micOn = false;
+        }
+        syncBtns();
+    }
+    function stopWebcam() { if(webcamStream){webcamStream.getTracks().forEach(t=>t.stop());webcamStream=null;} const v=document.getElementById('webcam-video');if(v)v.srcObject=null; }
+    function toggleMic() { if(!webcamStream)return; const t=webcamStream.getAudioTracks()[0]; if(t){micOn=!micOn;t.enabled=micOn;syncBtns();} }
+    function toggleCam() { if(!webcamStream)return; const t=webcamStream.getVideoTracks()[0]; if(t){camOn=!camOn;t.enabled=camOn;syncBtns();} }
+    function syncBtns() {
+        const bm=document.getElementById('btn-mic'),bc=document.getElementById('btn-cam');
+        bm.className='ctrl-btn '+(micOn?'on':'off'); bm.textContent=micOn?'🎤':'🔇';
+        bc.className='ctrl-btn '+(camOn?'on':'off'); bc.textContent=camOn?'🎥':'📷';
+    }
+
+    // ========== 타이머 ==========
+    function startTimer() { elapsedSeconds=0; updateTimer(); timerInterval=setInterval(()=>{elapsedSeconds++;updateTimer();},1000); }
+    function stopTimer() { clearInterval(timerInterval); timerInterval=null; }
+    function updateTimer() { const m=String(Math.floor(elapsedSeconds/60)).padStart(2,'0'),s=String(elapsedSeconds%60).padStart(2,'0'); document.getElementById('rec-timer').textContent=m+':'+s; }
+    function fmtDur(t) { const m=Math.floor(t/60),s=t%60; return m?m+'분 '+s+'초 동안 연습했어요':s+'초 동안 연습했어요'; }
+
+    // ========== 순차 피드백 ==========
+    function scheduleFB(sc) {
+        const el=document.getElementById('prac-feedback-items');
+        el.innerHTML='<div style="font-size:0.82rem;color:var(--text-sub);padding:8px 0;">카메라를 보며 말해보세요. 곧 피드백이 표시됩니다...</div>';
+        document.getElementById('prac-impression').style.display='none';
+        sc.feedback.forEach((f,i)=>{
+            feedbackTimeouts.push(setTimeout(()=>{
+                if(i===0)el.innerHTML='';
+                const d=document.createElement('div'); d.className='feedback-item'; d.style.animation='fadeIn 0.3s ease';
+                d.innerHTML=`<span class="${f.type==='good'?'fb-good':'fb-tip'}">${f.type==='good'?'✅':'💬'} ${f.label}</span> — ${f.text}`;
+                el.appendChild(d); document.querySelector('.content').scrollTop=99999;
+            },f.delay*1000));
+        });
+        feedbackTimeouts.push(setTimeout(()=>{
+            const b=document.getElementById('prac-impression'); b.style.display='block'; b.style.animation='fadeIn 0.3s ease';
+            document.getElementById('prac-impression-text').innerHTML=sc.impression;
+            document.querySelector('.content').scrollTop=99999;
+        },sc.impressionDelay*1000));
+    }
+    function clearFB(){feedbackTimeouts.forEach(t=>clearTimeout(t));feedbackTimeouts=[];}
+
+    // ========== 선택 ==========
+    function selectPartner(card,type){selectedPartner=type;document.querySelectorAll('.partner-card').forEach(c=>c.classList.remove('selected'));card.classList.add('selected');}
+    function selectScenario(btn,sc){selectedScenario=sc;document.getElementById('scenario-group').querySelectorAll('.option-btn').forEach(b=>b.classList.remove('selected'));btn.classList.add('selected');}
+
+    // ========== 연습 시작 ==========
+    async function startPractice(){
+        const p=C[selectedPartner], sc=p[selectedScenario];
+        document.getElementById('pip-avatar').textContent=p.avatar;
+        document.getElementById('pip-name').innerHTML=p.pipName;
+        document.querySelector('.partner-pip').style.background=p.avatarBg;
+        document.getElementById('prac-scenario-badge').textContent=sc.badge;
+        document.getElementById('prac-speaker').textContent=sc.speaker;
+        document.getElementById('prac-question').textContent=sc.question;
+        const sit=document.getElementById('prac-situation');
+        if(selectedPartner==='mentor'){sit.style.borderLeftColor='#059669';document.getElementById('prac-speaker').style.color='#059669';}
+        else{sit.style.borderLeftColor='var(--primary)';document.getElementById('prac-speaker').style.color='var(--primary)';}
+        changeTab('practice'); await startWebcam(); startTimer(); scheduleFB(sc);
+    }
+
+    // ========== 연습 종료 ==========
+    function endPractice(){
+        stopWebcam();stopTimer();clearFB();
+        const p=C[selectedPartner],sc=p[selectedScenario],r=sc.result;
+        document.getElementById('result-duration').textContent=fmtDur(elapsedSeconds);
+        document.querySelector('#result-scenario-badge span').textContent=sc.badge+(selectedPartner==='mentor'?' · 멘토 지수':' · AI 면접관');
+        document.getElementById('result-stats').innerHTML=`
+            <div><div style="font-size:1.5rem;font-weight:900;color:${r.gc};">${r.grade}</div><div style="font-size:0.72rem;color:var(--text-sub);">종합 등급</div></div>
+            <div><div style="font-size:1.5rem;font-weight:900;color:var(--primary);">${r.s1.v}</div><div style="font-size:0.72rem;color:var(--text-sub);">${r.s1.l}</div></div>
+            <div><div style="font-size:1.5rem;font-weight:900;color:var(--warning);">${r.s2.v}</div><div style="font-size:0.72rem;color:var(--text-sub);">${r.s2.l}</div></div>`;
+        document.getElementById('result-impression').innerHTML=r.imp;
+        document.getElementById('result-next').innerHTML=r.next;
+        changeTab('practice-result');
+    }
+
+    // ========== 탭 전환 ==========
+    function changeTab(tabName,navEl){
+        if(document.getElementById('screen-practice').classList.contains('active')&&tabName!=='practice'){stopWebcam();stopTimer();clearFB();}
+        document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+        const t=document.getElementById('screen-'+tabName);if(t)t.classList.add('active');
+        const m={'home':0,'partner-select':1,'practice':1,'practice-result':1,'jobs':2,'onboard':3};
+        document.querySelectorAll('.nav-item').forEach((n,i)=>n.classList.toggle('active',i===m[tabName]));
+        document.querySelector('.content').scrollTop=0;
+    }
+    // ========== 태스크 매칭 엔진 ==========
+    const STANDING = ['불가','15분','30분','1시간','2시간+'];
+    function getSelected(groupId) { const s = document.querySelector('#'+groupId+' .selected'); return s ? s.getAttribute('data-val') : ''; }
+    function getConds() {
+        return {
+            standing: parseInt(document.getElementById('cond-standing').value),
+            noise: getSelected('cond-noise'),
+            work: getSelected('cond-work'),
+            repeat: getSelected('cond-repeat'),
+            hand: getSelected('cond-hand')
+        };
+    }
+
+    // 태스크 DB: 각 태스크에 요구 조건을 태깅
+    const JOBS = [
+        { name:'도서 데이터 라벨링', company:'(주)퓨처데이터', info:'재택 · 월 120만원', original:'데이터 라벨링 매니저',
+          tasks:[
+            { text:'이미지 내 텍스트 분류', tags:'혼자·반복', reqStanding:0, reqNoise:'any', reqWork:'혼자', reqRepeat:'선호', reqHand:'키보드' },
+            { text:'라벨 태그 입력', tags:'키보드·정적', reqStanding:0, reqNoise:'any', reqWork:'혼자', reqRepeat:'선호', reqHand:'키보드' },
+            { text:'결과 검수표 작성', tags:'양손·집중', reqStanding:0, reqNoise:'quiet', reqWork:'혼자', reqRepeat:'보통', reqHand:'양손' }
+          ]},
+        { name:'우편물 분류 및 정리', company:'OO시청 A지사', info:'시간제 · 시급 11,000원', original:'우편물 관리 사무원',
+          tasks:[
+            { text:'우편물 바코드 스캔', tags:'반복·단순', reqStanding:0, reqNoise:'any', reqWork:'혼자', reqRepeat:'선호', reqHand:'한손' },
+            { text:'부서별 분류', tags:'혼자·정적', reqStanding:0, reqNoise:'any', reqWork:'혼자', reqRepeat:'선호', reqHand:'한손' },
+            { text:'우편물 운반', tags:'서기 필요', reqStanding:2, reqNoise:'any', reqWork:'혼자', reqRepeat:'보통', reqHand:'양손' }
+          ]},
+        { name:'SNS 콘텐츠 이미지 태깅', company:'(주)소셜랩', info:'재택 · 건당 800원', original:'SNS 마케팅 어시스턴트',
+          tasks:[
+            { text:'이미지 카테고리 분류', tags:'반복·시각', reqStanding:0, reqNoise:'any', reqWork:'혼자', reqRepeat:'선호', reqHand:'키보드' },
+            { text:'해시태그 작성', tags:'창의·타이핑', reqStanding:0, reqNoise:'any', reqWork:'혼자', reqRepeat:'비선호', reqHand:'키보드' },
+            { text:'팀 슬랙 보고', tags:'소통·팀', reqStanding:0, reqNoise:'any', reqWork:'팀', reqRepeat:'보통', reqHand:'키보드' }
+          ]},
+        { name:'도서관 서가 정리', company:'OO대학교 중앙도서관', info:'시간제 · 시급 10,500원', original:'도서관 사서 보조',
+          tasks:[
+            { text:'반납 도서 분류', tags:'반복·단순', reqStanding:1, reqNoise:'quiet', reqWork:'혼자', reqRepeat:'선호', reqHand:'양손' },
+            { text:'서가 배열 정리', tags:'이동·양손', reqStanding:3, reqNoise:'quiet', reqWork:'혼자', reqRepeat:'선호', reqHand:'양손' },
+            { text:'파손 도서 기록', tags:'키보드·정적', reqStanding:0, reqNoise:'quiet', reqWork:'혼자', reqRepeat:'보통', reqHand:'키보드' }
+          ]},
+        { name:'카페 음료 제조 보조', company:'OO복지재단 카페', info:'주 3일 · 시급 11,000원', original:'바리스타',
+          tasks:[
+            { text:'컵·재료 준비 세팅', tags:'반복·양손', reqStanding:2, reqNoise:'any', reqWork:'팀', reqRepeat:'선호', reqHand:'양손' },
+            { text:'음료 제조 (레시피 따라)', tags:'반복·서기', reqStanding:3, reqNoise:'any', reqWork:'팀', reqRepeat:'선호', reqHand:'양손' },
+            { text:'주문 확인·전달', tags:'소통·서기', reqStanding:2, reqNoise:'any', reqWork:'팀', reqRepeat:'보통', reqHand:'한손' }
+          ]},
+        { name:'의류 검수 및 포장', company:'(주)패션로직', info:'주 5일 · 월 140만원', original:'물류 검수원',
+          tasks:[
+            { text:'의류 외관 검수', tags:'반복·시각', reqStanding:1, reqNoise:'any', reqWork:'혼자', reqRepeat:'선호', reqHand:'양손' },
+            { text:'택 부착 및 포장', tags:'반복·양손', reqStanding:1, reqNoise:'any', reqWork:'혼자', reqRepeat:'선호', reqHand:'양손' },
+            { text:'박스 적재 및 운반', tags:'힘·서기', reqStanding:3, reqNoise:'any', reqWork:'팀', reqRepeat:'보통', reqHand:'양손' }
+          ]},
+        { name:'고객 문의 채팅 응대', company:'(주)헬프데스크코리아', info:'재택 · 월 130만원', original:'고객센터 상담원',
+          tasks:[
+            { text:'채팅 문의 답변 (템플릿)', tags:'타이핑·반복', reqStanding:0, reqNoise:'any', reqWork:'혼자', reqRepeat:'선호', reqHand:'키보드' },
+            { text:'문의 유형 분류·기록', tags:'분류·반복', reqStanding:0, reqNoise:'any', reqWork:'혼자', reqRepeat:'선호', reqHand:'키보드' },
+            { text:'전화 콜백 안내', tags:'소통·전화', reqStanding:0, reqNoise:'quiet', reqWork:'팀', reqRepeat:'비선호', reqHand:'키보드' }
+          ]},
+        { name:'실내 화분 관리', company:'OO구청 시설관리과', info:'주 3일 · 시급 10,500원', original:'시설 관리 보조',
+          tasks:[
+            { text:'화분 물주기', tags:'이동·반복', reqStanding:2, reqNoise:'any', reqWork:'혼자', reqRepeat:'선호', reqHand:'양손' },
+            { text:'잎 정리·분갈이 보조', tags:'양손·집중', reqStanding:1, reqNoise:'any', reqWork:'혼자', reqRepeat:'보통', reqHand:'양손' },
+            { text:'관리 일지 작성', tags:'키보드·정적', reqStanding:0, reqNoise:'any', reqWork:'혼자', reqRepeat:'보통', reqHand:'키보드' }
+          ]}
+    ];
+
+    function matchTask(task, conds) {
+        let ok = true, warnings = [];
+        // 서기 체크
+        if (task.reqStanding > conds.standing) { ok = false; warnings.push('서기 '+STANDING[task.reqStanding]+' 필요'); }
+        // 소음 체크
+        if (task.reqNoise === 'quiet' && conds.noise === '매우 민감') { /* quiet job = good for sensitive */ }
+        // 작업방식 체크
+        if (conds.work === '혼자 작업' && task.reqWork === '팀') { ok = false; warnings.push('팀 협업 필요'); }
+        // 반복 체크
+        if (conds.repeat === '비선호' && task.reqRepeat === '선호') { ok = false; warnings.push('반복 업무'); }
+        if (conds.repeat === '선호' && task.reqRepeat === '비선호') { ok = false; warnings.push('비정형 업무'); }
+        // 손 사용 체크
+        if (conds.hand === '키보드만 가능' && (task.reqHand === '양손' || task.reqHand === '한손')) { ok = false; warnings.push(task.reqHand+' 사용 필요'); }
+        if (conds.hand === '한 손 가능' && task.reqHand === '양손') { ok = false; warnings.push('양손 사용 필요'); }
+        return { ok, warnings };
+    }
+
+    function renderJobs(conds) {
+        // 태그 표시
+        const tagsEl = document.getElementById('jobs-tags');
+        const standLabel = STANDING[conds.standing];
+        tagsEl.innerHTML = [
+            '#서기 '+standLabel, '#소음 '+conds.noise, '#'+conds.work, '#반복 '+conds.repeat, '#'+conds.hand
+        ].map(t => '<span class="tag">'+t+'</span>').join('');
+
+        // 각 직무별 매칭 계산
+        const results = JOBS.map(job => {
+            let matched = 0, total = job.tasks.length, taskResults = [];
+            job.tasks.forEach(task => {
+                const r = matchTask(task, conds);
+                if (r.ok) matched++;
+                taskResults.push({ ...task, ...r });
+            });
+            const pct = Math.round((matched / total) * 100);
+            return { ...job, matched, total, pct, taskResults };
+        });
+
+        // 매칭률 높은 순 정렬
+        results.sort((a, b) => b.pct - a.pct);
+
+        // 매칭률 0%인 건 제외하고 상위 4개만
+        const filtered = results.filter(r => r.pct > 0).slice(0, 4);
+
+        const listEl = document.getElementById('jobs-list');
+        if (filtered.length === 0) {
+            listEl.innerHTML = '<div class="card" style="text-align:center;color:var(--text-sub);padding:30px;">현재 조건에 맞는 태스크가 없습니다.<br>조건을 수정해보세요.</div>';
+            return;
+        }
+
+        listEl.innerHTML = filtered.map(job => {
+            const badgeClass = job.pct >= 90 ? 'match-high' : 'match-mid';
+            const tasksHtml = job.taskResults.map(t => {
+                if (t.ok) return `<div class="task-item"><span class="task-check">✅</span> ${t.text} (${t.tags})</div>`;
+                return `<div class="task-item"><span class="task-warn">⚠️</span> ${t.text} <span style="color:var(--warning);font-size:0.75rem;">(${t.warnings.join(', ')})</span></div>`;
+            }).join('');
+            return `
+                <div class="job-card">
+                    <div class="match-badge ${badgeClass}">${job.pct}% 일치</div>
+                    <div class="job-name">${job.name}</div>
+                    <div class="job-company">${job.company} · ${job.info}</div>
+                    <div class="task-decompose">
+                        <div class="task-decompose-title">📋 태스크 분해 내역</div>
+                        ${tasksHtml}
+                    </div>
+                    <div class="original-job">
+                        🔍 원래 직무: <b>${job.original}</b> → ${job.total}개 태스크 중 ${job.matched}개 매칭됨
+                    </div>
+                </div>`;
+        }).join('');
+    }
+
+    function saveConditionsAndMatch() {
+        renderJobs(getConds());
+        changeTab('jobs');
+    }
+
+    // 태스크 탭 직접 클릭 시에도 현재 조건으로 렌더링
+    const origChangeTab = changeTab;
+    changeTab = function(tabName, navEl) {
+        if (tabName === 'jobs') renderJobs(getConds());
+        origChangeTab(tabName, navEl);
+    };
+</script>
+
+</body>
+</html>
