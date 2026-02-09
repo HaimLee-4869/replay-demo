@@ -324,7 +324,7 @@
                     <div class="shortcut-label">화상 연습</div>
                     <div class="shortcut-desc">면접·스몰토크 연습</div>
                 </div>
-                <div class="shortcut-card" onclick="changeTab('jobs')">
+                <div class="shortcut-card" onclick="goToTab('jobs')">
                     <div class="shortcut-icon">🧩</div>
                     <div class="shortcut-label">태스크 매칭</div>
                     <div class="shortcut-desc">나에게 맞는 업무</div>
@@ -551,7 +551,7 @@
         <div class="nav-item" onclick="changeTab('partner-select', this)">
             <div class="nav-icon">🎥</div><span>RE:PLAY</span>
         </div>
-        <div class="nav-item" onclick="changeTab('jobs', this)">
+        <div class="nav-item" onclick="goToTab('jobs', this)">
             <div class="nav-icon">🧩</div><span>태스크</span>
         </div>
         <div class="nav-item" onclick="changeTab('onboard', this)">
@@ -840,15 +840,19 @@
 
     function saveConditionsAndMatch() {
         renderJobs(getConds());
-        changeTab('jobs');
+        goToTab('jobs');
     }
 
-    // 태스크 탭 직접 클릭 시에도 현재 조건으로 렌더링
-    const origChangeTab = changeTab;
-    changeTab = function(tabName, navEl) {
+    function toggleOption(btn){
+        btn.parentElement.querySelectorAll('.option-btn').forEach(b=>b.classList.remove('selected'));
+        btn.classList.add('selected');
+    }
+
+    // changeTab을 goToTab으로 래핑하여 jobs 진입 시 자동 렌더링
+    function goToTab(tabName, navEl) {
         if (tabName === 'jobs') renderJobs(getConds());
-        origChangeTab(tabName, navEl);
-    };
+        changeTab(tabName, navEl);
+    }
 </script>
 
 </body>
