@@ -289,7 +289,100 @@
         /* 유틸 */
         .mt-12 { margin-top: 12px; }
         .text-center { text-align: center; }
-    </style>
+    
+        /* ========== R-Score (기존 '내 조건' 탭) ========== */
+        .rscore-brand{
+            font-size: 1.6rem;
+            font-weight: 900;
+            color: var(--text-main);
+            margin-bottom: 12px;
+        }
+        .rscore-title{
+            font-size: 1.15rem;
+            font-weight: 800;
+            color: var(--text-main);
+            margin-bottom: 14px;
+        }
+        .rscore-main-card{
+            border: 2px solid var(--primary-mid);
+            box-shadow: none;
+        }
+        .rscore-main-label{
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: var(--primary);
+            text-align: center;
+            margin-bottom: 10px;
+        }
+        .rscore-main-score{
+            font-size: 2.1rem;
+            font-weight: 900;
+            color: var(--text-main);
+            text-align: center;
+            letter-spacing: -0.5px;
+        }
+        .rscore-main-score-num{ color: var(--text-main); }
+        .rscore-main-sub{
+            font-size: 0.78rem;
+            color: var(--text-sub);
+            text-align: center;
+            margin-top: 8px;
+        }
+        .rscore-metrics{
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        .rscore-metric-card{
+            padding: 14px 12px;
+            margin-bottom: 0;
+            text-align: center;
+        }
+        .rscore-metric-label{
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: var(--text-sub);
+            margin-bottom: 8px;
+        }
+        .rscore-metric-value{
+            font-size: 1.35rem;
+            font-weight: 900;
+            letter-spacing: -0.2px;
+        }
+        .rscore-metric-green{ color: var(--accent); }
+        .rscore-metric-blue{ color: var(--primary); }
+
+        .rscore-chart-title{
+            font-size: 0.95rem;
+            font-weight: 800;
+            color: var(--text-main);
+            margin: 16px 0 10px;
+        }
+        .rscore-chart-card{
+            padding: 14px 14px 18px;
+            margin-bottom: 0;
+        }
+        .rscore-bars{
+            display: flex;
+            align-items: flex-end;
+            gap: 10px;
+            height: 160px;
+            padding: 8px 6px 0;
+            border-radius: 14px;
+            background: linear-gradient(180deg, rgba(67,56,202,0.05), rgba(67,56,202,0.00));
+        }
+        .rscore-bar{
+            flex: 1;
+            min-width: 0;
+            border-radius: 10px 10px 6px 6px;
+            background: #E5E7EB;
+        }
+        .rscore-bar:last-child{
+            background: #3B82F6;
+        }
+        .rscore-hidden{ display:none; }
+</style>
 </head>
 <body>
 
@@ -343,7 +436,47 @@
         </div>
 
         <!-- ========== 수행 조건 입력 (온보딩) ========== -->
-        <div id="screen-onboard" class="screen">
+        <div id="screen-rscore" class="screen">
+            <div class="rscore-brand">R-Score</div>
+            <div class="rscore-title">나의 직무 포트폴리오</div>
+
+            <div class="card rscore-main-card">
+                <div class="rscore-main-label">AI 직무 역량 점수</div>
+                <div class="rscore-main-score">R-Score <span class="rscore-main-score-num">82.5</span></div>
+                <div class="rscore-main-sub">3개월간 14,892건의 태스크를 99.2% 정확도로 수행</div>
+            </div>
+
+            <div class="rscore-metrics">
+                <div class="card rscore-metric-card">
+                    <div class="rscore-metric-label">업무 완수율</div>
+                    <div class="rscore-metric-value rscore-metric-green">100%</div>
+                </div>
+                <div class="card rscore-metric-card">
+                    <div class="rscore-metric-label">마감 준수율</div>
+                    <div class="rscore-metric-value rscore-metric-green">100%</div>
+                </div>
+                <div class="card rscore-metric-card">
+                    <div class="rscore-metric-label">결과물 정확도</div>
+                    <div class="rscore-metric-value rscore-metric-blue">99.2%</div>
+                </div>
+                <div class="card rscore-metric-card">
+                    <div class="rscore-metric-label">월간 지속성</div>
+                    <div class="rscore-metric-value rscore-metric-blue">95.0%</div>
+                </div>
+            </div>
+
+            <div class="rscore-chart-title">R-Score 성장 그래프</div>
+            <div class="card rscore-chart-card">
+                <div class="rscore-bars" aria-label="R-Score 성장 그래프(플레이스홀더)">
+                    <div class="rscore-bar" style="height: 34%"></div>
+                    <div class="rscore-bar" style="height: 46%"></div>
+                    <div class="rscore-bar" style="height: 58%"></div>
+                    <div class="rscore-bar" style="height: 78%"></div>
+                </div>
+            </div>
+        </div>
+
+<div id="screen-onboard" class="screen">
             <div class="onboard-title">나의 수행 조건 설정</div>
             <div class="onboard-sub">장애 등급이 아닌, <b>실제로 할 수 있는 것</b>을 기준으로 매칭해드려요.</div>
 
@@ -395,10 +528,9 @@
 
             <button class="btn-primary" onclick="saveConditionsAndMatch()">조건 저장하고 매칭 보기</button>
             <button class="btn-secondary" onclick="changeTab('home')">나중에 할게요</button>
+        
         </div>
-
-        <!-- ========== RE:PLAY 연습 파트너 선택 ========== -->
-        <div id="screen-partner-select" class="screen">
+<div id="screen-partner-select" class="screen">
             <div class="onboard-title">연습 파트너 선택</div>
             <div class="onboard-sub">오늘은 어떤 파트너와 연습할까요?</div>
 
@@ -554,8 +686,8 @@
         <div class="nav-item" onclick="goToTab('jobs', this)">
             <div class="nav-icon">🧩</div><span>태스크</span>
         </div>
-        <div class="nav-item" onclick="changeTab('onboard', this)">
-            <div class="nav-icon">⚙️</div><span>내 조건</span>
+        <div class="nav-item" onclick="changeTab('rscore', this)">
+            <div class="nav-icon">⚙️</div><span>R-Score</span>
         </div>
     </div>
 </div>
@@ -698,7 +830,7 @@
         if(document.getElementById('screen-practice').classList.contains('active')&&tabName!=='practice'){stopWebcam();stopTimer();clearFB();}
         document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
         const t=document.getElementById('screen-'+tabName);if(t)t.classList.add('active');
-        const m={'home':0,'partner-select':1,'practice':1,'practice-result':1,'jobs':2,'onboard':3};
+        const m={'home':0,'partner-select':1,'practice':1,'practice-result':1,'jobs':2,'onboard':3 ,'rscore':3};
         document.querySelectorAll('.nav-item').forEach((n,i)=>n.classList.toggle('active',i===m[tabName]));
         document.querySelector('.content').scrollTop=0;
     }
